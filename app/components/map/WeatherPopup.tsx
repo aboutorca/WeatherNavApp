@@ -13,6 +13,16 @@ interface WeatherPopupProps {
 }
 
 export default function WeatherPopup({ weather }: WeatherPopupProps) {
+  const arrivalTime = weather.timestamp ? new Date(weather.timestamp) : null;
+  const timeString = arrivalTime?.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  });
+  const isToday = arrivalTime?.toDateString() === new Date().toDateString();
+  const dateString = !isToday && arrivalTime ?
+    arrivalTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+
   return (
     <div className="p-3 min-w-[200px]">
       <div className="flex items-start justify-between mb-2">
@@ -23,6 +33,11 @@ export default function WeatherPopup({ weather }: WeatherPopupProps) {
           <p className="text-sm text-gray-600">
             Feels like {formatTemperature(weather.feelsLike)}
           </p>
+          {timeString && (
+            <p className="text-xs text-gray-500 mt-1">
+              {timeString} {dateString}
+            </p>
+          )}
         </div>
         <img
           src={getWeatherIcon(weather.icon)}

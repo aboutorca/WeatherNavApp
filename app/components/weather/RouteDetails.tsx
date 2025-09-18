@@ -106,42 +106,59 @@ function WeatherTimeline({ weatherData }: { weatherData: WeatherData[] }) {
 
   return (
     <div className="space-y-3">
-      {weatherData.map((weather, index) => (
-        <div key={index} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
-          <img
-            src={getWeatherIcon(weather.icon)}
-            alt={weather.description}
-            className="w-12 h-12"
-          />
-          <div className="flex-1">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="font-medium">
-                  Waypoint {index + 1}
-                  {index === 0 && ' (Start)'}
-                  {index === weatherData.length - 1 && ' (End)'}
-                </p>
-                <p className="text-sm text-gray-600 capitalize">{weather.description}</p>
+      {weatherData.map((weather, index) => {
+        const arrivalTime = weather.timestamp ? new Date(weather.timestamp) : null;
+        const timeString = arrivalTime?.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        });
+        const isToday = arrivalTime?.toDateString() === new Date().toDateString();
+        const dateString = !isToday && arrivalTime ?
+          arrivalTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+
+        return (
+          <div key={index} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
+            <img
+              src={getWeatherIcon(weather.icon)}
+              alt={weather.description}
+              className="w-12 h-12"
+            />
+            <div className="flex-1">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="font-medium">
+                    Waypoint {index + 1}
+                    {index === 0 && ' (Start)'}
+                    {index === weatherData.length - 1 && ' (End)'}
+                  </p>
+                  <p className="text-sm text-gray-600 capitalize">{weather.description}</p>
+                  {timeString && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Arrival: {timeString} {dateString}
+                    </p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <p className="font-semibold">{formatTemperature(weather.temperature)}</p>
+                  <Badge
+                    className={`${getSeverityBgColor(weather.severity)} text-white text-xs`}
+                  >
+                    {weather.severity}
+                  </Badge>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="font-semibold">{formatTemperature(weather.temperature)}</p>
-                <Badge
-                  className={`${getSeverityBgColor(weather.severity)} text-white text-xs`}
-                >
-                  {weather.severity}
-                </Badge>
+              <div className="grid grid-cols-3 gap-2 mt-2 text-xs text-gray-600">
+                <span>Wind: {Math.round(weather.windSpeed * 2.237)} mph</span>
+                <span>Humidity: {weather.humidity}%</span>
+                {weather.precipitation && weather.precipitation > 0 && (
+                  <span>Rain: {weather.precipitation.toFixed(1)} mm/h</span>
+                )}
               </div>
-            </div>
-            <div className="grid grid-cols-3 gap-2 mt-2 text-xs text-gray-600">
-              <span>Wind: {Math.round(weather.windSpeed * 2.237)} mph</span>
-              <span>Humidity: {weather.humidity}%</span>
-              {weather.precipitation && weather.precipitation > 0 && (
-                <span>Rain: {weather.precipitation.toFixed(1)} mm/h</span>
-              )}
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

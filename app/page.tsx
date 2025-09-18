@@ -51,13 +51,13 @@ export default function Home() {
 
       return response.json();
     },
-    onSuccess: async (routes: Route[]) => {
+    onSuccess: async (routes: Route[], { departureTime }) => {
       if (routes.length > 0) {
         setRoutes(routes);
         setSelectedRoute(routes[0]);
 
-        // Fetch weather for the primary route
-        await fetchWeatherForRoute(routes[0]);
+        // Fetch weather for the primary route with departure time
+        await fetchWeatherForRoute(routes[0], departureTime);
       }
     },
     onError: (error) => {
@@ -67,7 +67,7 @@ export default function Home() {
   });
 
   // Fetch weather data for a route
-  const fetchWeatherForRoute = async (route: Route) => {
+  const fetchWeatherForRoute = async (route: Route, departureTime?: Date) => {
     try {
       const waypoints = sampleWaypoints(
         route.geometry,
@@ -75,10 +75,17 @@ export default function Home() {
         route.duration
       );
 
+      // Calculate the base departure time (now or scheduled)
+      const baseDepartureTime = departureTime ? departureTime.getTime() : Date.now();
+
       const response = await fetch('/api/weather', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ waypoints })
+        body: JSON.stringify({
+          waypoints,
+          forecast: true, // Always use forecast
+          departureTime: baseDepartureTime
+        })
       });
 
       if (response.ok) {
@@ -104,19 +111,22 @@ export default function Home() {
       setOrigin(origin);
       setDestination(destination);
       setWeatherData([]);
+      setCurrentDepartureTime(departureTime);
       routeMutation.mutate({ origin, destination, departureTime });
     },
     [routeMutation]
   );
 
+  const [currentDepartureTime, setCurrentDepartureTime] = useState<Date | undefined>();
+
   const handleAlternativeRoute = useCallback(
     (routeIndex: number) => {
       if (routes[routeIndex]) {
         setSelectedRoute(routes[routeIndex]);
-        fetchWeatherForRoute(routes[routeIndex]);
+        fetchWeatherForRoute(routes[routeIndex], currentDepartureTime);
       }
     },
-    [routes]
+    [routes, currentDepartureTime]
   );
 
   return (

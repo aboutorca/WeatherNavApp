@@ -94,6 +94,7 @@ export default function MapView({
       mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1IjoiZGVtby11c2VyIiwiYSI6ImNrNW8wZHF0ZDA2ZGQzZW55MjVhOHFxZGEifQ.demo'}
       style={{ width: '100%', height: '100%' }}
       interactiveLayerIds={['weather-points']}
+      collectStats={false}
     >
       <NavigationControl position="top-right" />
 
